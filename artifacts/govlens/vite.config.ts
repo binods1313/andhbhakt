@@ -82,6 +82,14 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    proxy: {
+      // Live schemes/CAG/news when the API is up. Without this, Vite
+      // serves index.html for /api/* (HTTP 200) and the UI treats HTML as data.
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
   },
   preview: {
     port,

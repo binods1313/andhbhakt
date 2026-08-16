@@ -2,22 +2,25 @@
 
 Local notes for running and extending the Andhbhakt.org frontend.
 
+Do **not** commit `.env`, `SESSION_SECRET`, `ADMIN_TOKEN`, or database credentials.
+
 ## Run locally
 
-Requires **Node.js 24** and **pnpm**.
+Requires **Node.js 24** and **pnpm** (the repo rejects npm/yarn on `pnpm install`).
 
 ```bash
 pnpm install
 cp .env.example .env
 ```
 
-Frontend (the site):
+### Frontend on port 3100 (no API required)
+
+*nix:
 
 ```bash
 pnpm --filter @workspace/govlens run dev
+# or: pnpm run dev
 ```
-
-Opens at **http://localhost:3100/**. Vite defaults to 3100 (`artifacts/govlens/vite.config.ts`). Port 3000 is often used by other local apps.
 
 PowerShell:
 
@@ -26,16 +29,67 @@ $env:PORT = 3100
 pnpm --filter @workspace/govlens run dev
 ```
 
-API (optional — live schemes, CAG, news, admin):
+Opens at **http://localhost:3100/**. Vite defaults to 3100 (`artifacts/govlens/vite.config.ts`). Port 3000 is often used by other local apps.
+
+### Central Schemes without Postgres (mock / offline)
+
+The Central Schemes page (`/schemes` and `/central-schemes`) needs `/api/schemes`. If the API is down, the page shows a banner and an empty state. Load the 8-row sample catalog:
+
+*nix:
 
 ```bash
-# needs PostgreSQL and DATABASE_URL in .env
-pnpm --filter @workspace/db run push
-psql "$DATABASE_URL" -f lib/db/seed.sql
-pnpm --filter @workspace/api-server run dev
+pnpm run dev:mock
 ```
 
-The API listens on `PORT` from `.env` (example: 8080). No Cloudflare or Turnstile keys are required in development.
+PowerShell:
+
+```powershell
+$env:PORT = 3100
+pnpm run dev:mock
+```
+
+Then open http://localhost:3100/central-schemes?mockSchemes=1
+
+You can also click **Load sample schemes** on the empty page, or toggle **Use sample schemes (dev)** (shown in `import.meta.env.DEV`). Sample data lives in `artifacts/govlens/src/data/mock/schemes.sample.json` and is marked **FOR DEV ONLY**.
+
+`npm run dev:mock` works the same if you already ran `pnpm install` (it just forwards to the pnpm script).
+
+### Vite `/api` proxy
+
+In development, Vite proxies `/api` → **http://localhost:8080**. Restart the Vite process after pulling this change. Without the proxy, Vite used to return `index.html` for `/api/*` and the schemes page treated HTML as an empty list.
+
+### API (optional — live schemes, CAG, news, admin)
+
+Needs PostgreSQL and `DATABASE_URL` in `.env`. No Cloudflare or Turnstile keys in development.
+
+```bash
+pnpm --filter @workspace/db run push
+psql "$DATABASE_URL" -f lib/db/seed.sql
+```
+
+*nix API start (the package `dev` script uses bash `export`):
+
+```bash
+PORT=8080 pnpm --filter @workspace/api-server run dev
+```
+
+PowerShell — avoid the bash `export` in `dev`; build then start:
+
+```powershell
+$env:NODE_ENV = "development"
+$env:PORT = "8080"
+pnpm --filter @workspace/api-server run build
+pnpm --filter @workspace/api-server run start
+```
+
+The API listens on `PORT` (example: 8080). Leave `.env` uncommitted.
+
+### Smoke test
+
+```bash
+# frontend already on 3100
+pnpm run test:e2e
+```
 
 ### Build
 

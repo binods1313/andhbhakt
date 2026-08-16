@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SEO } from '@/components/seo';
-import { useListSchemes, useListCategories, useListMinistries, getListSchemesQueryKey } from '@workspace/api-client-react';
 import { SchemeCard } from '@/components/scheme-card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
+import { Search, Filter, CircleHelp, DatabaseZap } from 'lucide-react';
 import namesHiRaw from '@/data/ministries-hi.json';
+import { useSchemesCatalog } from '@/hooks/use-schemes-catalog';
 
 const namesHi = namesHiRaw as Record<string, string>;
 
@@ -18,15 +20,24 @@ export default function Schemes() {
   const [ministry, setMinistry] = useState<string | undefined>();
   const [severity, setSeverity] = useState<string | undefined>();
 
-  const { data: schemesData, isLoading } = useListSchemes(
-    { search, categoryId, ministry, severity },
-    { query: { queryKey: getListSchemesQueryKey({ search, categoryId, ministry, severity }) } }
-  );
-  const { data: categoriesData } = useListCategories();
-  const { data: ministriesData } = useListMinistries();
-  const schemes = Array.isArray(schemesData) ? schemesData : [];
-  const categories = Array.isArray(categoriesData) ? categoriesData : [];
-  const ministries = Array.isArray(ministriesData) ? ministriesData : [];
+  const filtersActive = Boolean(search.trim() || categoryId || ministry || severity);
+  const catalog = useSchemesCatalog({ search, categoryId, ministry, severity });
+  const {
+    schemes,
+    categories,
+    ministries,
+    isLoading,
+    apiFailed,
+    apiEmpty,
+    usingMock,
+    mockEnabled,
+    enableMock,
+    toggleMock,
+  } = catalog;
+
+  const showOfflineBanner = apiFailed || apiEmpty || usingMock;
+  const showEmpty = !isLoading && schemes.length === 0;
+  const emptyBecauseFilters = showEmpty && (usingMock || (!apiFailed && filtersActive));
 
   return (
     <div className="min-h-[100dvh] bg-background">
@@ -37,19 +48,60 @@ export default function Schemes() {
         ogImage="/og/schemes.jpg"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">{t('pageHeading')}</h1>
-          <p className="text-muted-foreground">
-            {t('pageDescription')}
-          </p>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <div className="mb-2 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-foreground">{t('pageHeading')}</h1>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={t('schemesHelpLabel')}
+                >
+                  <CircleHelp className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs text-xs leading-relaxed">
+                {t('schemesHelpTooltip')}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <p className="text-muted-foreground">{t('pageDescription')}</p>
         </div>
 
-        {/* Filters */}
-        <div className="bg-card border border-card-border rounded-lg p-4 mb-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {showOfflineBanner && (
+          <div
+            role="status"
+            aria-live="polite"
+            data-testid="schemes-offline-banner"
+            className="mb-6 rounded-lg border border-amber-800/30 bg-amber-50 px-4 py-3 text-sm text-foreground dark:border-amber-400/30 dark:bg-amber-950/40"
+          >
+            <p className="font-medium">{t('schemesOfflineBanner')}</p>
+            <p className="mt-1 text-muted-foreground">{t('schemesOfflineHint')}</p>
+            <div className="mt-3 flex flex-col gap-2 font-mono text-xs text-muted-foreground sm:flex-row sm:flex-wrap">
+              <span>
+                Windows: <code className="rounded bg-background px-1.5 py-0.5">$env:PORT=8080; pnpm --filter @workspace/api-server run start</code>
+              </span>
+              <span>
+                *nix: <code className="rounded bg-background px-1.5 py-0.5">PORT=8080 pnpm --filter @workspace/api-server run start</code>
+              </span>
+            </div>
+            <p className="mt-2">
+              <a
+                href="https://github.com/JCRYDER3/andhbhakt/blob/main/DEVELOPMENT.md"
+                className="font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {t('schemesReadDevDocs')}
+              </a>
+            </p>
+          </div>
+        )}
+
+        <div className="mb-6 rounded-lg border border-card-border bg-card p-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t('searchPlaceholder')}
                 value={search}
@@ -59,13 +111,16 @@ export default function Schemes() {
               />
             </div>
 
-            <Select value={categoryId?.toString() || 'all'} onValueChange={(val) => setCategoryId(val === 'all' ? undefined : Number(val))}>
+            <Select
+              value={categoryId?.toString() || 'all'}
+              onValueChange={(val) => setCategoryId(val === 'all' ? undefined : Number(val))}
+            >
               <SelectTrigger data-testid="select-category">
                 <SelectValue placeholder={t('allCategories')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('allCategories')}</SelectItem>
-                {categories?.map((cat) => (
+                {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id.toString()}>
                     {isHi ? (namesHi[cat.name] ?? cat.name) : cat.name}
                   </SelectItem>
@@ -73,13 +128,16 @@ export default function Schemes() {
               </SelectContent>
             </Select>
 
-            <Select value={ministry || 'all'} onValueChange={(val) => setMinistry(val === 'all' ? undefined : val)}>
+            <Select
+              value={ministry || 'all'}
+              onValueChange={(val) => setMinistry(val === 'all' ? undefined : val)}
+            >
               <SelectTrigger data-testid="select-ministry">
                 <SelectValue placeholder={t('allMinistries')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('allMinistries')}</SelectItem>
-                {ministries?.map((min) => (
+                {ministries.map((min) => (
                   <SelectItem key={min} value={min}>
                     {isHi ? (namesHi[min] ?? min) : min}
                   </SelectItem>
@@ -87,7 +145,10 @@ export default function Schemes() {
               </SelectContent>
             </Select>
 
-            <Select value={severity || 'all'} onValueChange={(val) => setSeverity(val === 'all' ? undefined : val)}>
+            <Select
+              value={severity || 'all'}
+              onValueChange={(val) => setSeverity(val === 'all' ? undefined : val)}
+            >
               <SelectTrigger data-testid="select-severity">
                 <SelectValue placeholder={t('allSeverities')} />
               </SelectTrigger>
@@ -99,37 +160,81 @@ export default function Schemes() {
               </SelectContent>
             </Select>
           </div>
+
+          {(import.meta.env.DEV || mockEnabled) && (
+            <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={mockEnabled}
+                data-testid="toggle-mock-schemes"
+                onClick={toggleMock}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span
+                  className={`relative h-5 w-9 rounded-full transition-colors ${mockEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                  aria-hidden="true"
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-background shadow transition-transform ${mockEnabled ? 'translate-x-4' : ''}`}
+                  />
+                </span>
+                {t('schemesMockToggle')}
+              </button>
+              {usingMock && (
+                <span className="rounded-full border border-amber-800/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-200">
+                  {t('schemesMockBadge')}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Results */}
         {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(9)].map((_, i) => (
-              <div key={i} className="bg-card border border-card-border rounded-lg p-4 animate-pulse">
-                <div className="h-4 bg-muted rounded w-3/4 mb-3"></div>
-                <div className="h-3 bg-muted rounded w-full mb-2"></div>
-                <div className="h-3 bg-muted rounded w-2/3"></div>
+              <div key={i} className="animate-pulse rounded-lg border border-card-border bg-card p-4">
+                <div className="mb-3 h-4 w-3/4 rounded bg-muted" />
+                <div className="mb-2 h-3 w-full rounded bg-muted" />
+                <div className="h-3 w-2/3 rounded bg-muted" />
               </div>
             ))}
           </div>
-        ) : schemes && schemes.length > 0 ? (
+        ) : schemes.length > 0 ? (
           <>
-            <div className="mb-4 text-sm text-muted-foreground">
-              {t('foundCountPrefix')} {schemes.length} {t('schemeSingular')}{schemes.length !== 1 ? t('schemePluralSuffix') : ''}
+            <div className="mb-4 text-sm text-muted-foreground" role="status" aria-live="polite">
+              {t('foundCountPrefix')} {schemes.length} {t('schemeSingular')}
+              {schemes.length !== 1 ? t('schemePluralSuffix') : ''}
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {schemes.map((scheme) => (
                 <SchemeCard key={scheme.id} scheme={scheme} />
               ))}
             </div>
           </>
         ) : (
-          <div className="text-center py-16">
-            <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">{t('noSchemesFound')}</h3>
-            <p className="text-muted-foreground">
-              {t('emptyStateHint')}
+          <div
+            className="py-16 text-center"
+            role="status"
+            aria-live="polite"
+            data-testid="schemes-empty-state"
+          >
+            <Filter className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
+            <h3 className="mb-2 text-lg font-semibold text-foreground">{t('noSchemesFound')}</h3>
+            <p className="mx-auto mb-6 max-w-md text-muted-foreground">
+              {emptyBecauseFilters ? t('emptyStateHint') : t('schemesEmptyOffline')}
             </p>
+            {!usingMock && (
+              <Button
+                type="button"
+                data-testid="enable-mock-schemes"
+                onClick={enableMock}
+                className="min-h-11"
+              >
+                <DatabaseZap className="h-4 w-4" aria-hidden="true" />
+                {t('schemesEnableMock')}
+              </Button>
+            )}
           </div>
         )}
       </div>

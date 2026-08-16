@@ -38,6 +38,7 @@ function Router() {
         <Route path="/minister/:slug" component={MinisterProfile} />
         <Route path="/" component={CentralData} />
         <Route path="/schemes" component={Schemes} />
+        <Route path="/central-schemes" component={Schemes} />
         <Route path="/schemes/:slug" component={SchemeDetail} />
         <Route path="/development-index" component={DevelopmentIndex} />
         <Route path="/reports" component={Reports} />
