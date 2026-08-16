@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MockSchemesSwitch } from '@/components/mock-schemes-toggle';
 
 type NavLink = {
   href: string;
@@ -69,6 +70,7 @@ export function Header() {
 
   function isActive(href: string) {
     if (href === '/') return location === '/' || location === '/central-data';
+    if (href === '/schemes') return location === '/schemes' || location === '/central-schemes';
     return location === href || location.startsWith(`${href}/`);
   }
 
@@ -109,7 +111,8 @@ export function Header() {
                     ))}
                   </ul>
                 </nav>
-                <div className="mt-1 border-t border-border px-4 py-3 sm:hidden">
+                <div className="mt-1 flex flex-col gap-2 border-t border-border px-4 py-3 sm:hidden">
+                  <MockSchemesSwitch compact testId="header-toggle-mock-schemes-mobile" />
                   <LanguageSelect id="lang-select-mobile" />
                 </div>
               </div>
@@ -178,6 +181,8 @@ export function Header() {
             >
               <Github className="h-4 w-4" aria-hidden="true" />
             </a>
+
+            <MockSchemesSwitch testId="header-toggle-mock-schemes" />
 
             <div className="hidden sm:block">
               <LanguageSelect id="lang-select" />

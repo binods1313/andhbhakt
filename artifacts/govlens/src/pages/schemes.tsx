@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Button } from '@/components/ui/button';
 import { Search, Filter, CircleHelp, DatabaseZap } from 'lucide-react';
 import namesHiRaw from '@/data/ministries-hi.json';
+import { MockSchemesSwitch } from '@/components/mock-schemes-toggle';
 import { useSchemesCatalog } from '@/hooks/use-schemes-catalog';
 
 const namesHi = namesHiRaw as Record<string, string>;
@@ -32,7 +33,6 @@ export default function Schemes() {
     usingMock,
     mockEnabled,
     enableMock,
-    toggleMock,
   } = catalog;
 
   const showOfflineBanner = apiFailed || apiEmpty || usingMock;
@@ -163,24 +163,7 @@ export default function Schemes() {
 
           {(import.meta.env.DEV || mockEnabled) && (
             <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-3">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={mockEnabled}
-                data-testid="toggle-mock-schemes"
-                onClick={toggleMock}
-                className="inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <span
-                  className={`relative h-5 w-9 rounded-full transition-colors ${mockEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                  aria-hidden="true"
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-background shadow transition-transform ${mockEnabled ? 'translate-x-4' : ''}`}
-                  />
-                </span>
-                {t('schemesMockToggle')}
-              </button>
+              <MockSchemesSwitch compact />
               {usingMock && (
                 <span className="rounded-full border border-amber-800/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-200">
                   {t('schemesMockBadge')}

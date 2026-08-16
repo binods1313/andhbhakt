@@ -8,12 +8,17 @@ import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 const rawPort = process.env.PORT;
 // PORT is only required for the dev/preview server, not for production builds
 const port = rawPort ? Number(rawPort) : 3100;
+const mockSchemes =
+  process.env.VITE_MOCK_SCHEMES === '1' || process.env.USE_MOCK_SCHEMES === '1';
 
 // BASE_PATH is required for dev server routing; default to '/' for production builds
 const basePath = process.env.BASE_PATH ?? '/';
 
 export default defineConfig({
   base: basePath,
+  define: {
+    'import.meta.env.VITE_MOCK_SCHEMES': JSON.stringify(mockSchemes ? '1' : '0'),
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -88,6 +93,24 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
+        secure: false,
+        timeout: 10_000,
+        proxyTimeout: 10_000,
+        configure(proxy) {
+          proxy.on('error', (err, _req, res) => {
+            const payload = JSON.stringify({
+              error: 'API unreachable',
+              code: (err as NodeJS.ErrnoException).code ?? 'ECONNREFUSED',
+            });
+            if (res && 'writeHead' in res && typeof res.writeHead === 'function') {
+              if (!res.headersSent) {
+                res.writeHead(502, { 'Content-Type': 'application/json' });
+              }
+              res.end(payload);
+              return;
+            }
+          });
+        },
       },
     },
   },

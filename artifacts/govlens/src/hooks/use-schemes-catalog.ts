@@ -1,65 +1,60 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   getListSchemesQueryKey,
   useListCategories,
   useListMinistries,
   useListSchemes,
 } from '@workspace/api-client-react';
+import { useMockSchemes } from '@/components/mock-schemes-toggle';
 import {
   MOCK_CATEGORIES,
   MOCK_MINISTRIES,
   filterMockSchemes,
-  isMockSchemesQueryEnabled,
-  setMockSchemesQuery,
   type SchemeFilters,
 } from '@/data/mock/schemes';
+import { probeApiHealth } from '@/lib/fetch-with-fallback';
 
 export function useSchemesCatalog(filters: SchemeFilters) {
-  const [mockEnabled, setMockEnabled] = useState(isMockSchemesQueryEnabled);
+  const { mockEnabled, enableMock, disableMock, toggleMock } = useMockSchemes();
 
-  const enableMock = useCallback(() => {
-    setMockSchemesQuery(true);
-    setMockEnabled(true);
-  }, []);
+  const healthQuery = useQuery({
+    queryKey: ['api-health'],
+    queryFn: ({ signal }) => probeApiHealth(signal),
+    enabled: !mockEnabled,
+    retry: 0,
+    staleTime: 15_000,
+  });
 
-  const disableMock = useCallback(() => {
-    setMockSchemesQuery(false);
-    setMockEnabled(false);
-  }, []);
-
-  const toggleMock = useCallback(() => {
-    setMockEnabled((prev) => {
-      const next = !prev;
-      setMockSchemesQuery(next);
-      return next;
-    });
-  }, []);
+  const apiUp = healthQuery.data === true;
+  const liveEnabled = !mockEnabled && apiUp;
 
   const schemesQuery = useListSchemes(filters, {
     query: {
       queryKey: getListSchemesQueryKey(filters),
-      retry: 1,
-      retryDelay: 400,
-      enabled: !mockEnabled,
+      retry: 0,
+      enabled: liveEnabled,
     },
   });
   const categoriesQuery = useListCategories({
-    query: { retry: 1, retryDelay: 400, enabled: !mockEnabled },
+    query: { retry: 0, enabled: liveEnabled },
   });
   const ministriesQuery = useListMinistries({
-    query: { retry: 1, retryDelay: 400, enabled: !mockEnabled },
+    query: { retry: 0, enabled: liveEnabled },
   });
 
   const liveSchemes = Array.isArray(schemesQuery.data) ? schemesQuery.data : null;
   const liveCategories = Array.isArray(categoriesQuery.data) ? categoriesQuery.data : null;
   const liveMinistries = Array.isArray(ministriesQuery.data) ? ministriesQuery.data : null;
 
+  const healthSettled = mockEnabled || !healthQuery.isLoading;
   const apiFailed =
     !mockEnabled &&
-    !schemesQuery.isLoading &&
-    (schemesQuery.isError || liveSchemes === null);
+    healthSettled &&
+    (healthQuery.isError || healthQuery.data === false || schemesQuery.isError || liveSchemes === null);
   const apiEmpty =
     !mockEnabled &&
+    liveEnabled &&
     !schemesQuery.isLoading &&
     liveSchemes !== null &&
     liveSchemes.length === 0;
@@ -69,7 +64,7 @@ export function useSchemesCatalog(filters: SchemeFilters) {
   const categories = usingMock ? MOCK_CATEGORIES : (liveCategories ?? []);
   const ministries = usingMock ? MOCK_MINISTRIES : (liveMinistries ?? []);
 
-  const isLoading = usingMock ? false : schemesQuery.isLoading;
+  const isLoading = usingMock ? false : !healthSettled || (liveEnabled && schemesQuery.isLoading);
 
   return useMemo(
     () => ({

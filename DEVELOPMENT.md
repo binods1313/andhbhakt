@@ -56,7 +56,34 @@ You can also click **Load sample schemes** on the empty page, or toggle **Use sa
 
 ### Vite `/api` proxy
 
-In development, Vite proxies `/api` → **http://localhost:8080**. Restart the Vite process after pulling this change. Without the proxy, Vite used to return `index.html` for `/api/*` and the schemes page treated HTML as an empty list.
+In development, Vite proxies `/api` → **http://localhost:8080** (`changeOrigin: true`, `secure: false`, 10s timeout). If nothing is listening, the proxy returns **HTTP 502** `{ "error": "API unreachable" }` instead of dumping `ECONNREFUSED` and serving HTML. The Central Schemes page treats that as offline mode.
+
+Restart the Vite process after pulling proxy changes (`vite.config.ts` is not hot-reloaded).
+
+### Health check
+
+When the API is up:
+
+```
+GET http://localhost:8080/api/health     → { "status": "ok" }
+GET http://localhost:8080/api/healthz    → { "status": "ok" }
+```
+
+Through the Vite proxy (frontend on 3100):
+
+```
+GET http://localhost:3100/api/health
+```
+
+PowerShell:
+
+```powershell
+Invoke-WebRequest http://localhost:8080/api/health -UseBasicParsing
+# or, via the frontend proxy:
+Invoke-WebRequest http://localhost:3100/api/health -UseBasicParsing
+```
+
+If port 8080 is closed, the first command fails to connect. The second should return **502** with `{ "error": "API unreachable" }`.
 
 ### API (optional — live schemes, CAG, news, admin)
 
@@ -73,7 +100,7 @@ psql "$DATABASE_URL" -f lib/db/seed.sql
 PORT=8080 pnpm --filter @workspace/api-server run dev
 ```
 
-PowerShell — avoid the bash `export` in `dev`; build then start:
+PowerShell — `dev` uses bash `export`, so build then start:
 
 ```powershell
 $env:NODE_ENV = "development"
@@ -82,7 +109,31 @@ pnpm --filter @workspace/api-server run build
 pnpm --filter @workspace/api-server run start
 ```
 
-The API listens on `PORT` (example: 8080). Leave `.env` uncommitted.
+Or from the repo root:
+
+```powershell
+pnpm run dev:api:win
+```
+
+The API listens on `PORT` (example: 8080). Leave `.env` uncommitted. Without Postgres it will exit; that is expected on a UI-only checkout — use `pnpm run dev:mock` instead.
+
+### Troubleshooting: ECONNREFUSED on /api
+
+Vite logs `ECONNREFUSED` when it proxies `/api/*` and nothing is bound to **8080**. Confirm:
+
+```powershell
+netstat -ano | Select-String ":8080"
+# or
+Get-NetTCPConnection -State Listen -LocalPort 8080
+```
+
+Empty output means the API is not running. Then:
+
+1. Keep doing UI work: `pnpm run dev:mock` and open `/central-schemes?mockSchemes=1`.
+2. Or start the API (`pnpm run dev:api:win`) **after** Postgres and `DATABASE_URL` are set.
+3. Restart Vite so it picks up proxy error-handler changes.
+
+`Select-String -Path .\artifacts\api-server\package.json -Pattern "start"` shows the API start script: `node --enable-source-maps ./dist/index.mjs`.
 
 ### Smoke test
 

@@ -8,6 +8,7 @@ import path from 'node:path';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 process.env.VITE_MOCK_SCHEMES = '1';
+process.env.USE_MOCK_SCHEMES = '1';
 process.env.PORT = process.env.PORT || '3100';
 
 const child = spawn(
