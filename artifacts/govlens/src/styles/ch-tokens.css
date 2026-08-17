@@ -107,6 +107,11 @@
   color: var(--ch-text-muted);
 }
 
+/* Department / scheme / report names follow the header colour picker. */
+.ch-page-accent-text {
+  color: var(--page-accent) !important;
+}
+
 .ch-freshness {
   position: relative;
   display: inline-flex;
@@ -356,9 +361,9 @@
   min-height: var(--ch-touch-min);
   padding: 0 0.9rem;
   border-radius: var(--ch-radius-md);
-  border: 1px solid rgba(var(--ch-state-rgb, 234, 179, 8), 0.55);
+  border: 1px solid rgba(var(--page-accent-rgb), 0.55);
   background: var(--ch-bg-panel);
-  color: rgb(var(--ch-state-rgb, 234, 179, 8));
+  color: var(--page-accent);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;

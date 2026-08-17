@@ -81,12 +81,12 @@ export function IdentityListingCard({
         <rect x="1.2" y="1.2" width="97.6" height="97.6" rx="6" pathLength="1" />
       </svg>
       <header className="relative z-10 mb-3 flex items-start justify-between gap-3">
-        <p className="ch-label" style={{ color: 'rgb(var(--ch-state-rgb))' }}>
+        <p className="ch-label ch-page-accent-text">
           {eyebrow}
         </p>
         <DataFreshnessBadge kind={freshness} detail={freshnessDetail} source={source} />
       </header>
-      <h3 className="relative z-10 mb-2 text-base font-black leading-snug tracking-tight text-[var(--ch-text-primary)]">
+      <h3 className="ch-page-accent-text relative z-10 mb-2 text-base font-black leading-snug tracking-tight">
         {title}
       </h3>
       {chip ? <div className="relative z-10 mb-3">{chip}</div> : null}
