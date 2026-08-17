@@ -1855,8 +1855,9 @@ function SchemesSection() {
   const [catFilter, setCatFilter] = useState<string>('all');
   const [sevFilter, setSevFilter] = useState<string>('all');
 
-  const { data: schemesData, isLoading } = useListSchemes({});
-  const { data: categoriesData }         = useListCategories();
+  const apiOff = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('govlens-api-down') === '1';
+  const { data: schemesData, isLoading } = useListSchemes({}, { query: { enabled: !apiOff, retry: 0 } });
+  const { data: categoriesData }         = useListCategories({ query: { enabled: !apiOff, retry: 0 } });
   // Without the API, Vite serves index.html for /api/* (HTTP 200 text).
   // Default `= []` only applies when data is undefined, not when it is a string.
   const schemes    = Array.isArray(schemesData)    ? schemesData    : [];
@@ -1991,8 +1992,9 @@ function CagSection() {
       const data = await r.json();
       return Array.isArray(data) ? data : [];
     }),
+    enabled: typeof sessionStorage === 'undefined' || sessionStorage.getItem('govlens-api-down') !== '1',
     staleTime: 5 * 60 * 1000,
-    retry: 3,
+    retry: 0,
   });
 
   const audits = useMemo(() => {

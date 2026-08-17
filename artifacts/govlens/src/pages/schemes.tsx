@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SEO } from '@/components/seo';
-import { SchemeCard } from '@/components/scheme-card';
+import { IdentityListingCard, SeveritySignal } from '@/components/ch/IdentityListingCard';
+import { familyFromMinistry, hashedCardIdentity } from '@/lib/ch/stateIdentity';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -40,7 +41,7 @@ export default function Schemes() {
   const emptyBecauseFilters = showEmpty && (usingMock || (!apiFailed && filtersActive));
 
   return (
-    <div className="min-h-[100dvh] bg-background">
+    <div className="ch-listing">
       <SEO
         title="Government Scheme Reality Check — PIB Claims vs CAG Findings"
         description="Compare Indian government press releases against Comptroller and Auditor General audit findings for 55+ BJP-era Union schemes. Evidence-based accountability."
@@ -51,12 +52,12 @@ export default function Schemes() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6">
           <div className="mb-2 flex items-center gap-2">
-            <h1 className="text-3xl font-bold text-foreground">{t('pageHeading')}</h1>
+            <h1 className="ch-listing__title text-3xl font-bold">{t('pageHeading')}</h1>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-md text-[var(--ch-text-muted)] hover:bg-[var(--ch-bg-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ch-border-focus)]"
                   aria-label={t('schemesHelpLabel')}
                 >
                   <CircleHelp className="h-4 w-4" aria-hidden="true" />
@@ -67,7 +68,7 @@ export default function Schemes() {
               </TooltipContent>
             </Tooltip>
           </div>
-          <p className="text-muted-foreground">{t('pageDescription')}</p>
+          <p className="ch-listing__lede">{t('pageDescription')}</p>
         </div>
 
         {showOfflineBanner && (
@@ -75,7 +76,7 @@ export default function Schemes() {
             role="status"
             aria-live="polite"
             data-testid="schemes-offline-banner"
-            className="mb-6 rounded-lg border border-amber-800/30 bg-amber-50 px-4 py-3 text-sm text-foreground dark:border-amber-400/30 dark:bg-amber-950/40"
+            className="mb-6 rounded-lg border border-[rgba(255,255,255,0.12)] bg-[var(--ch-bg-panel)] px-4 py-3 text-sm text-[var(--ch-text-primary)]"
           >
             <p className="font-medium">{t('schemesOfflineBanner')}</p>
             <p className="mt-1 text-muted-foreground">{t('schemesOfflineHint')}</p>
@@ -98,7 +99,7 @@ export default function Schemes() {
           </div>
         )}
 
-        <div className="mb-6 rounded-lg border border-card-border bg-card p-4">
+        <div className="ch-filter-bar mb-6 p-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -106,7 +107,7 @@ export default function Schemes() {
                 placeholder={t('searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
+                className="ch-control pl-10"
                 data-testid="input-search-schemes"
               />
             </div>
@@ -185,14 +186,44 @@ export default function Schemes() {
           </div>
         ) : schemes.length > 0 ? (
           <>
-            <div className="mb-4 text-sm text-muted-foreground" role="status" aria-live="polite">
+            <div className="mb-4 text-sm text-[var(--ch-text-secondary)]" role="status" aria-live="polite">
               {t('foundCountPrefix')} {schemes.length} {t('schemeSingular')}
               {schemes.length !== 1 ? t('schemePluralSuffix') : ''}
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {schemes.map((scheme) => (
-                <SchemeCard key={scheme.id} scheme={scheme} />
-              ))}
+              {schemes.map((scheme) => {
+                const identity = hashedCardIdentity(String(scheme.id), familyFromMinistry(scheme.ministry));
+                const sev = scheme.worstSeverity;
+                const sevKind =
+                  sev === 'critical' || sev === 'major' || sev === 'minor' ? sev : 'unaudited';
+                return (
+                  <IdentityListingCard
+                    key={scheme.id}
+                    identity={identity}
+                    eyebrow={isHi ? (namesHi[scheme.ministry] ?? scheme.ministry) : scheme.ministry}
+                    title={scheme.name}
+                    headline={String(scheme.launchedYear)}
+                    headlineLabel="Launched"
+                    source="PIB / scheme record"
+                    asOf={String(scheme.launchedYear)}
+                    scope="Union of India"
+                    freshness={usingMock ? 'fallback' : 'static'}
+                    freshnessDetail={
+                      usingMock
+                        ? 'Sample catalog for local UI review — not a live API row.'
+                        : 'Compiled scheme record in this checkout.'
+                    }
+                    chip={
+                      <SeveritySignal
+                        kind={sevKind}
+                        label={sev ? sev : t('unaudited')}
+                      />
+                    }
+                    href={`/schemes/${scheme.slug}`}
+                    testId={`card-scheme-${scheme.slug}`}
+                  />
+                );
+              })}
             </div>
           </>
         ) : (

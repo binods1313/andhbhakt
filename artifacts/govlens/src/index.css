@@ -3,6 +3,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import './styles/tokens.css';
+@import './styles/ch-tokens.css';
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));

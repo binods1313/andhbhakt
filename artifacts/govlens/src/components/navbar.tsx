@@ -79,7 +79,14 @@ export function Header() {
       <a href="#main-content" className="skip-link">
         {t('skipToContent')}
       </a>
-      <header className="sticky top-0 z-50 border-b border-border bg-card/85 backdrop-blur-md">
+      <header
+        className={cn(
+          'sticky top-0 z-50 border-b backdrop-blur-md',
+          location === '/schemes' || location === '/central-schemes' || location === '/reports'
+            ? 'ch-nav-dark'
+            : 'border-border bg-card/85',
+        )}
+      >
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
           <div className="relative xl:hidden" ref={menuRef}>
             <button
