@@ -83,7 +83,7 @@ export function Header() {
       <header
         className={cn(
           'sticky top-0 z-50 border-b backdrop-blur-md',
-          location === '/schemes' || location === '/central-schemes' || location === '/reports'
+          location === '/schemes' || location === '/central-schemes' || location === '/reports' || location === '/funding'
             ? 'ch-nav-dark'
             : 'border-border bg-card/85',
         )}

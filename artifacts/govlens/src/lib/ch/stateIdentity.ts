@@ -69,6 +69,24 @@ export function familyFromMinistry(ministry: string): IdentityFamily {
   return 'air';
 }
 
+export function familyFromCoalition(coalition: string): IdentityFamily {
+  if (coalition === 'NDA') return 'gold';
+  if (coalition === 'INDIA') return 'forest';
+  if (coalition === 'State') return 'water';
+  return 'orchid';
+}
+
+export function familyFromSector(sector: string): IdentityFamily {
+  const s = sector.toLowerCase();
+  if (/lotter|gaming|hotel/.test(s)) return 'gold';
+  if (/infra|engineer|construct|real/.test(s)) return 'earth';
+  if (/min|coal|steel/.test(s)) return 'forest';
+  if (/telecom|airtel|tech/.test(s)) return 'air';
+  if (/health|pharma|hospital/.test(s)) return 'orchid';
+  if (/power|energy/.test(s)) return 'gold';
+  return 'earth';
+}
+
 export function familyFromCagWing(category: string, ministry = ''): IdentityFamily {
   const s = `${category} ${ministry}`.toLowerCase();
   if (/financ|revenue|tax/.test(s)) return 'gold';
