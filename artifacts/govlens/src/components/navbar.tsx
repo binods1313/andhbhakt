@@ -190,12 +190,13 @@ export function Header() {
               <Github className="h-4 w-4" aria-hidden="true" />
             </a>
 
-            <PageColorPicker />
             <MockSchemesSwitch testId="header-toggle-mock-schemes" />
 
             <div className="hidden sm:block">
               <LanguageSelect id="lang-select" />
             </div>
+
+            <PageColorPicker />
           </div>
         </div>
       </header>
