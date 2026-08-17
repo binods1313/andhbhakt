@@ -160,9 +160,9 @@ export function Header() {
                       href={link.href}
                       aria-current={active ? 'page' : undefined}
                       className={cn(
-                        'inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        'ch-nav-link inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         active
-                          ? 'bg-primary/10 text-primary'
+                          ? 'ch-nav-link--active'
                           : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                       )}
                     >
@@ -233,8 +233,8 @@ function NavItem({ link, active }: { link: NavLink; active: boolean }) {
       href={link.href}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex min-h-11 items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-        active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+        'ch-nav-link flex min-h-11 items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+        active ? 'ch-nav-link--active' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
       )}
     >
       <Icon className="h-4 w-4 flex-shrink-0" aria-hidden="true" />

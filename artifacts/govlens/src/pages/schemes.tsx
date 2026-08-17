@@ -166,7 +166,7 @@ export default function Schemes() {
             <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-3">
               <MockSchemesSwitch compact />
               {usingMock && (
-                <span className="rounded-full border border-amber-800/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-200">
+                <span className="rounded-full border border-[#fde68a]/40 bg-[#78350f]/50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#fde68a]">
                   {t('schemesMockBadge')}
                 </span>
               )}

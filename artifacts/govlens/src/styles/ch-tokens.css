@@ -42,6 +42,23 @@
   --ch-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --page-accent: #c2410c;
   --page-accent-rgb: 194, 65, 12;
+  --page-accent-text: #fdba74;
+}
+
+/* Flip Tailwind semantic tokens so muted/foreground stay AA on near-black. */
+.ch-listing,
+.ch-nav-dark {
+  --background: 240 4% 4%;
+  --foreground: 40 14% 96%;
+  --muted: 240 4% 14%;
+  --muted-foreground: 36 10% 86%;
+  --card: 240 5% 9%;
+  --card-foreground: 40 14% 96%;
+  --border: 30 4% 26%;
+  --primary: 32 96% 64%;
+  --primary-foreground: 20 14% 8%;
+  --input: 30 4% 26%;
+  --ring: 32 96% 64%;
 }
 
 .ch-listing {
@@ -66,12 +83,28 @@
   color: var(--ch-text-primary);
 }
 
-.ch-nav-dark .text-foreground {
-  color: var(--ch-text-primary);
+.ch-nav-dark .text-foreground,
+header.ch-nav-dark .text-foreground {
+  color: #f5f5f4 !important;
 }
 
-.ch-nav-dark .text-muted-foreground {
-  color: var(--ch-text-muted);
+.ch-nav-dark .text-muted-foreground,
+header.ch-nav-dark .text-muted-foreground {
+  color: #e7e5e4 !important;
+}
+
+.ch-nav-dark .ch-nav-link {
+  color: #e7e5e4;
+}
+
+.ch-nav-dark .ch-nav-link:hover {
+  color: #fafaf9;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ch-nav-dark .ch-nav-link--active {
+  color: var(--page-accent-text, #fdba74);
+  background: rgba(var(--page-accent-rgb), 0.18);
 }
 
 .ch-card {
@@ -109,7 +142,7 @@
 
 /* Department / scheme / report names follow the header colour picker. */
 .ch-page-accent-text {
-  color: var(--page-accent) !important;
+  color: var(--page-accent-text, #fdba74) !important;
 }
 
 .ch-freshness {

@@ -1,5 +1,7 @@
 /** Per-page accent. 8 presets plus a free hex. Stored in localStorage, never sent to a server. */
 
+import { readableOn } from '@/lib/contrast';
+
 export const PAGE_ACCENTS = [
   { id: 'saffron', hex: '#c2410c', label: 'Saffron' },
   { id: 'gold', hex: '#eab308', label: 'Gold' },
@@ -60,8 +62,10 @@ export function setPageAccent(pathname: string, hex: string) {
 export function applyPageAccent(hex: string) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
+  const text = readableOn(hex, '#161618', 4.55);
   root.style.setProperty('--page-accent', hex);
   root.style.setProperty('--page-accent-rgb', hexToRgb(hex));
-  root.style.setProperty('--ch-accent', hex);
+  root.style.setProperty('--page-accent-text', text);
+  root.style.setProperty('--ch-accent', text);
   root.style.setProperty('--ch-border-focus', `rgba(${hexToRgb(hex)}, 0.55)`);
 }

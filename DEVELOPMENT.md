@@ -178,6 +178,24 @@ Palette: navy neutrals + saffron primary, tuned so body text and primary-on-whit
 
 ## Accessibility
 
+WCAG 2.2 AA targets: **4.5:1** normal text, **3:1** large text / UI.
+
+Measured pairs (WCAG relative luminance) after the dark listing + nav remaps:
+
+| Surface | Foreground | Background | Ratio | AA |
+|---|---|---|---|---|
+| Inactive nav links (before) | `#434e5c` | `#0a0a0b` | **2.34:1** | Fail |
+| Inactive nav links (after) | `#e7e5e4` | `#0a0a0b` | **15.76:1** | Pass |
+| Wordmark | `#f5f5f4` | `#0a0a0b` | **18.14:1** | Pass |
+| Card body | `#f5f5f4` | `#161618` | **16.57:1** | Pass |
+| Card secondary | `#d6d3d1` | `#161618` | **12.13:1** | Pass |
+| Saffron name (before) | `#c2410c` | `#161618` | **3.49:1** | Fail |
+| Saffron name (after, auto-lightened) | `#de5d28` | `#161618` | **4.91:1** | Pass |
+| SAMPLE badge | `#fde68a` | `#78350f` | **7.28:1** | Pass |
+| Light-theme muted (other pages) | `#434e5c` | `#f7f8fa` | **7.96:1** | Pass |
+
+Page-picker accents that fall below 4.5:1 on `#161618` (earth / orchid / rose / saffron) are lightened only for **text** (`--page-accent-text`). Borders keep the chosen hex.
+
 - Skip link is the first focusable control.
 - Header is a `<header>`; nav has an accessible name.
 - Mobile menu: `aria-expanded`, Escape to close, 44px touch targets.
