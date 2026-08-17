@@ -41,17 +41,27 @@ export function isApiUnreachablePayload(data: unknown): boolean {
   );
 }
 
+const API_DOWN_KEY = 'govlens-api-down';
+
 export async function probeApiHealth(signal?: AbortSignal): Promise<boolean> {
   try {
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(API_DOWN_KEY) === '1') {
+      return false;
+    }
     const res = await fetch('/api/health', { signal });
-    if (!res.ok) return false;
     const data = await readJson(res);
-    if (isApiUnreachablePayload(data)) return false;
+    if (!res.ok || isApiUnreachablePayload(data)) {
+      sessionStorage?.setItem(API_DOWN_KEY, '1');
+      return false;
+    }
     if (data && typeof data === 'object' && 'status' in data) {
-      return (data as { status?: string }).status === 'ok';
+      const ok = (data as { status?: string }).status === 'ok';
+      if (ok) sessionStorage?.removeItem(API_DOWN_KEY);
+      return ok;
     }
     return true;
   } catch {
+    sessionStorage?.setItem(API_DOWN_KEY, '1');
     return false;
   }
 }

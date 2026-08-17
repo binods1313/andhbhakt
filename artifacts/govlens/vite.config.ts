@@ -1,7 +1,18 @@
 import path from 'path';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { createLogger, defineConfig } from 'vite';
+
+const logger = createLogger();
+const logError = logger.error.bind(logger);
+logger.error = (msg, options) => {
+  const text = String(msg);
+  // Expected on a UI-only checkout: nothing listens on :8080.
+  if (text.includes('http proxy error') || text.includes('ECONNREFUSED')) {
+    return;
+  }
+  logError(msg, options);
+};
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
@@ -15,6 +26,7 @@ const mockSchemes =
 const basePath = process.env.BASE_PATH ?? '/';
 
 export default defineConfig({
+  customLogger: logger,
   base: basePath,
   define: {
     'import.meta.env.VITE_MOCK_SCHEMES': JSON.stringify(mockSchemes ? '1' : '0'),
