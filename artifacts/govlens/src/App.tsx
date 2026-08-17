@@ -7,6 +7,7 @@ import { Route, Switch, Router as WouterRouter } from 'wouter';
 import { Footer } from '@/components/footer';
 import { Header } from '@/components/header';
 import { MockSchemesProvider } from '@/components/mock-schemes-toggle';
+import { PageAccentSync } from '@/components/page-color-picker';
 import { useTranslation } from 'react-i18next';
 
 const CentralData      = lazy(() => import('@/pages/central-data'));
@@ -73,6 +74,7 @@ function App() {
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <MockSchemesProvider>
             <HtmlLangSync />
+            <PageAccentSync />
             <Header />
             <main id="main-content" tabIndex={-1} className="min-w-0 outline-none">
               <Router />

@@ -15,6 +15,7 @@ import {
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MockSchemesSwitch } from '@/components/mock-schemes-toggle';
+import { PageColorPicker } from '@/components/page-color-picker';
 
 type NavLink = {
   href: string;
@@ -189,6 +190,7 @@ export function Header() {
               <Github className="h-4 w-4" aria-hidden="true" />
             </a>
 
+            <PageColorPicker />
             <MockSchemesSwitch testId="header-toggle-mock-schemes" />
 
             <div className="hidden sm:block">
