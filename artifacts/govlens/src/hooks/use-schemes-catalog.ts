@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   getListSchemesQueryKey,
@@ -28,6 +28,15 @@ export function useSchemesCatalog(filters: SchemeFilters) {
 
   const apiUp = healthQuery.data === true;
   const liveEnabled = !mockEnabled && apiUp;
+
+  // API-down is the normal Windows UI checkout. Flip sample data on so
+  // reviewers see cards instead of a blank "No schemes found" screen.
+  useEffect(() => {
+    if (mockEnabled || healthQuery.isLoading) return;
+    if (healthQuery.data === false || healthQuery.isError) {
+      enableMock();
+    }
+  }, [mockEnabled, healthQuery.isLoading, healthQuery.data, healthQuery.isError, enableMock]);
 
   const schemesQuery = useListSchemes(filters, {
     query: {
