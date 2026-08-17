@@ -187,10 +187,10 @@
   min-height: 100%;
   background:
     linear-gradient(160deg, rgba(var(--ch-state-rgb), 0.14) 0%, rgba(var(--ch-state-rgb), 0.03) 48%, var(--ch-bg-panel) 100%);
-  border: 2px solid rgba(var(--ch-state-rgb), 0.38);
+  border: 2px solid rgba(var(--page-accent-rgb), 0.55);
   box-shadow:
-    0 0 24px -12px rgba(var(--ch-state-rgb), 0.28),
-    inset 0 0 18px rgba(var(--ch-state-rgb), 0.05);
+    0 0 24px -12px rgba(var(--page-accent-rgb), 0.28),
+    inset 0 0 18px rgba(var(--page-accent-rgb), 0.05);
   touch-action: manipulation;
 }
 
@@ -252,7 +252,7 @@
 
 .ch-state-card__ring rect {
   fill: none;
-  stroke: rgb(var(--ch-state-rgb));
+  stroke: var(--page-accent);
   stroke-width: 1.25;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
@@ -270,15 +270,15 @@
 
 .ch-state-card.is-pressed {
   transform: scale(0.985);
-  border-color: rgba(var(--ch-state-rgb), 0.72);
+  border-color: var(--page-accent);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .ch-state-card:hover {
-    border-color: rgba(var(--ch-state-rgb), 0.7);
+    border-color: var(--page-accent);
     box-shadow:
-      0 0 32px -10px rgba(var(--ch-state-rgb), 0.36),
-      inset 0 0 20px rgba(var(--ch-state-rgb), 0.07);
+      0 0 32px -10px rgba(var(--page-accent-rgb), 0.36),
+      inset 0 0 20px rgba(var(--page-accent-rgb), 0.07);
   }
   .ch-state-card:hover .ch-state-card__yantra {
     opacity: 0.66;
